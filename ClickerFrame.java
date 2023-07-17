@@ -87,28 +87,28 @@ public class ClickerFrame extends JFrame {
 
         //ADMIN COMMANDS
         pc.setFocusable(true);
-        KeyListener hecu = new KeyAdapter() {
-            int x;
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_K)
-                    clicks += clickPower;
-                if(e.getKeyCode() == KeyEvent.VK_L) {
-                    clicks += clickPower * 100;
-                }
-                if(e.getKeyCode() == KeyEvent.VK_R) {
-                    Player player = new Player();
-                    player.save();
-                    dispose();
-
-                    ClickerFrame cf = new ClickerFrame();
-                    cf.setVisible(true);
-                }
-                updateProgress();
-            }
-        };
-        pc.requestFocusInWindow();
-        pc.addKeyListener(hecu);
+        //KeyListener hecu = new KeyAdapter() {
+        //    int x;
+        //    @Override
+        //    public void keyPressed(KeyEvent e) {
+        //        if(e.getKeyCode() == KeyEvent.VK_K)
+        //            clicks += clickPower;
+        //        if(e.getKeyCode() == KeyEvent.VK_L) {
+        //            clicks += clickPower * 100;
+        //        }
+        //        if(e.getKeyCode() == KeyEvent.VK_R) {
+        //            Player player = new Player();
+        //            player.save();
+        //            dispose();
+//
+        //            ClickerFrame cf = new ClickerFrame();
+        //            cf.setVisible(true);
+        //        }
+        //        updateProgress();
+        //    }
+        //};
+        //pc.requestFocusInWindow();
+        //pc.addKeyListener(hecu);
 
         /**-_-_-_-_-_-_- FUNCTIONALITY -_-_-_-_-_-_-_-*/
 
