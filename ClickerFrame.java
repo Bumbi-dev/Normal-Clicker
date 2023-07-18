@@ -358,7 +358,7 @@ public class ClickerFrame extends JFrame {
         Player player = new Player();
         player.loadProgress();
 
-        ClickerFrame cf = new ClickerFrame();
+        IntroFrame cf = new IntroFrame();
         cf.setVisible(true);
     }
 
