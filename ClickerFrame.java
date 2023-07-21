@@ -344,6 +344,17 @@ public class ClickerFrame extends JFrame {
                     resizeTimer.start();
                 }
             }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                if (resizeTimer != null && resizeTimer.isRunning()) {
+                    resizeTimer.restart(); // Restart the timer if it's already running
+                } else {
+                    resizeTimer = new Timer(300, actionEvent -> updateComponents());
+                    resizeTimer.setRepeats(false); // Only execute once
+                    resizeTimer.start();
+                }
+            }
         });
 
     }
