@@ -28,6 +28,7 @@ public class ClickerFrame extends JFrame {
         // Initialize
         super("Normal Clicker");
         setSize(600, 400);
+        setVisible(true);
         setLocationRelativeTo(null);
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
