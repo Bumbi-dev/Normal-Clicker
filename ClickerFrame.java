@@ -296,8 +296,7 @@ public class ClickerFrame extends JFrame {
                 if(e.getButton() != MouseEvent.BUTTON1 || clicks < buyOrDie.price)
                     return;
 
-                ps.noStress = false;
-                buyOrDie.setVisible(false);
+                new Credits(3);
 
                 updateProgress();
             }
