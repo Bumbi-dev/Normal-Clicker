@@ -1,44 +1,61 @@
-import javax.swing.*;
+package game.gameplay;
+
+import game.screens.Credits;
+import game.usefullclases.Culori;
+import game.usefullclases.gameVariablesAndMethods;
+
 import java.awt.*;
-import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Progress {
+public class Progress extends gameVariablesAndMethods {
+    public static Thread cpsThread;
+
     ClickerFrame cf;
-    JPanel pc;
 
-    Counter count;
-    Item rights, moreRights, bonus, question, lessRights, hack, scam, recovery, buyOrDie;
-    Item[] upgradeList;
-
-    boolean tutorialDone = false, negativeUnlocked, noStress = false;
-    int x;
-    double clicks, clickPower;
+    int Timer;
 
     public Progress (ClickerFrame cf) {
         this.cf = cf;
+        loadProgress();
     }
 
-    void updateProgress() {
-        getVariables();
+    public void updateProgress() {
         count.update(clicks);
-        //tutorial
-        if (!rights.isBought) {
-            if (clicks < 10) {
-                setVariables();
-                return;
-            }
-            pc.add(rights);
-            pc.repaint();
-        } else {
-            pc.add(count);
-            tutorialDone = true;
-        }
-        if (!tutorialDone) { //when count appears the tutorial is done, until then you can't make progress
-            setVariables();
+
+        if(!firstChapterDone) {
+            firstChapter();
+            updateVisibility();
             return;
         }
-        /**------  INTERESTING THINGS  ---------**/
+
+        //MINIGAME PHASE
+        question.setVisible(false);
+        cf.setResizable(true);
+
+        if(!recovery.isBought)
+            count.setVisible(false);
+
+        if(isMinigame && Timer > 10 && clicks + 9 >= buyOrDie.price)
+            buyOrDie.setPrice(++buyOrDie.price);
+
+        cf.updateComponents();
+        updateVisibility();
+    }
+
+    private void firstChapter() {
+        //TUTORIAL PHASE
+        if (!rights.isBought) {//when count appears the tutorial is done, until then you can't make progress
+            if (clicks < 10)
+                return;
+
+            pc.add(rights);
+            pc.repaint();
+            if(clicks >= 100)
+                new Credits("Clicking overdose");
+            return;
+        }
+
+        /**------  STARTING  ---------**/
         if (!moreRights.isBought) {// Suspense until 25 clicks, nothing on the screen, then "moreRights" appears
             if (clicks >= 25) {
                 pc.add(moreRights);
@@ -56,40 +73,33 @@ public class Progress {
                 pc.add(bonus);
             }
             pc.repaint();
-            setVariables();
             return;
         } else pc.add(moreRights);
 
         if (clicks < 10 && !(lessRights.isBought || hack.isBought || clickPower >= 2)) {//after another 10 clicks the other buttons appear
             bonus.setVisible(false);
             bonus.setBounds(100, 300, 50, 78);
-            setVariables();
             return;
         }
-        // Important buttons
+
+        // INTENSE GAMEPLAY PHASE
         pc.add(lessRights);
         pc.add(question);
         pc.add(hack);
         pc.add(scam);
         pc.repaint();
 
-        if (clicks >= 25_000 && !bonus.isBought)
+        if (clicks >= 25_000 && !lessRights.isBought)
             bonus.setVisible(true);
-        if (clicks >= 50_000) {
+        if (clicks >= 50_000)
             bonus.setVisible(false);
-            bonus.isBought = true;
-        }
 
-        if (!question.desc.getText().equals("???") && clickPower > 1) {
-            updateVisibility();
-            setVariables();
+        if (!lessRights.isBought)
             return;
-        }
 
-        if(!recovery.isBought)
-            count.setVisible(false);
-
+        count.setVisible(false);
         if(!question.isBought) {
+
             clicks = Math.min(255, clicks);// The outline slowly darkens until it is pitch black
             int x = (int) (255 - clicks);
 
@@ -99,61 +109,51 @@ public class Progress {
             return;
         }
 
-        cf.setResizable(true);
         question.recolor(Culori.question);
+        cf.setResizable(true);
         pc.add(recovery);
-
-        if(noStress) {
-            if(x > 5)
-                if (clicks + 9 >= buyOrDie.price)
-                    buyOrDie.setPrice(++buyOrDie.price);
-
-            updateVisibility();
-            setVariables(); return;
-        }
-
     }
 
-    void noStress() {// "minigame" - if you don't buy the item before the timer runs out you "die" / get bad ending, the price increases as you approach it and when there are 5 seconds left the clicks are reset to 100, but the price stays the same
+    void buyOrDieMinigame() {// "minigame" - if you don't buy the item before the timer runs out you "die" / get bad ending, the price increases as you approach it and when there are 10 seconds left the clicks are reset to 100, but the price stays the same
         buyOrDie.setVisible(true);
         buyOrDie.setPrice(100);
         buyOrDie.recolor(Culori.notAvailable);
-        AtomicInteger x = new AtomicInteger(100);
+        AtomicInteger x = new AtomicInteger(50);
 
-        Thread cpsThread = new Thread(() -> {
-            noStress = true;
+        cpsThread = new Thread(() -> {//counts down from 50
+            isMinigame = true;
             cf.updateComponents();
-            while(x.get() > 0 && noStress) {
-                getVariables();
+            while(x.get() > 0 && isMinigame) {
                 buyOrDie.setDesc("Buy or Die: " + x.decrementAndGet() + "s");//displays the time left
-
                 pc.repaint();
 
-                if(x.get() < 95 && !cf.isVisible())//if the windows is closed the thread is stopped
-                    break;
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (InterruptedException ie) {
+                    System.out.println("Minigame timer exception in Progress class");
                 }
-                this.x = x.get();
 
-                if(this.x == 5) {
-                    clicks = 100;
+                this.Timer = x.get();
+
+                if(this.Timer == 10) {
+                    clicks = Math.min(clicks, 100);
                     count.update(clicks);
                     updateVisibility();
                 }
             }
-            if(cf.isVisible() && noStress) {
-                cf.dispose();
-                new Credits(2);//Bad ENDING
+            if(cf.isVisible() && isMinigame) {
+                if(clicks >= 100)
+                    new Credits(Credits.DEATH, "You could try being more patient next time!");//Bad ENDING
+                else
+                    new Credits(Credits.DEATH, "Forgot to click?");
             }
         });
 
+        cpsThread.setDaemon(true);
         cpsThread.start();
     }
 
-    void updateVisibility() {//If the button is affordable it makes them green, if not red
+    void updateVisibility() {//Make button green if affordable, red if not
         for(Item item: upgradeList) {
             if(item.equals(bonus) || item.equals(question) || item.equals(rights)) {
                 continue;
@@ -162,10 +162,8 @@ public class Progress {
                 item.recolor(Culori.available);
             else item.recolor(Culori.notAvailable);
         }
-        setVariables();
     }
     void loadProgress() {//get the progress from file
-        getVariables();
         Player player = new Player();
         player.loadProgress();
 
@@ -174,17 +172,24 @@ public class Progress {
         moreRights.setPrice(player.price);
 
         upgradeList = new Item[]{rights, moreRights, scam, hack, bonus, lessRights, question, recovery, buyOrDie};
-        cf.upgradeList = upgradeList;
 
-        for (Item item : upgradeList)
+        for (Item item : upgradeList)//if the item name is present in the file then it is considered bought and will be invisible
             if (player.upgradeuri.contains(item.name)) {
                 item.isBought = true;
+
                 if(!item.equals(moreRights))
                     item.setVisible(false);
             }
-
         question.isBought = player.upgradeuri.contains("???");
 
+        question.setVisible(!question.isBought);
+        if(question.isBought) {
+            cf.setResizable(true);
+            pc.add(recovery);
+        }
+
+        if(rights.isBought)
+            pc.add(count);
         if(scam.isBought) {
             lessRights.setPrice(lessRights.price * 10);
             hack.setPrice(hack.price * 10);
@@ -194,11 +199,11 @@ public class Progress {
         if(hack.isBought) {
             question.addText("?");
             hack.setVisible(true);
-            cf.cps();
+            ClickerFrame.cps();
             hack.setPrice(1000);
         }
         if(lessRights.isBought) {
-            cf.cpsVal = 0;
+            ClickerFrame.cpsVal = 0;
 
             moreRights.setVisible(false);
             hack.setVisible(false);
@@ -211,53 +216,10 @@ public class Progress {
                 question.add(question.border);
             }
         }
-        if(recovery.isBought) {
-            noStress();
-        }
-        question.setVisible(true);
 
-        setVariables();
+        if(recovery.isBought && !buyOrDie.isBought)
+            buyOrDieMinigame();
+
         updateProgress();
-    }
-
-    void getVariables() {
-        pc = cf.pc;
-        count = cf.count;
-        rights = cf.rights;
-        moreRights = cf.moreRights;
-        bonus = cf.bonus;
-        question = cf.question;
-        lessRights = cf.lessRights;
-        hack = cf.hack;
-        scam = cf.scam;
-        recovery = cf.recovery;
-        buyOrDie = cf.buyOrDie;
-        upgradeList = cf.upgradeList;
-
-        tutorialDone = cf.tutorialDone;
-        negativeUnlocked = cf.negativeUnlocked;
-        clicks = cf.clicks;
-        clickPower = cf.clickPower;
-    }
-    void setVariables() {
-        cf.pc = pc;
-
-        cf.count = count;
-        cf.rights = rights;
-        cf.moreRights = moreRights;
-        cf.bonus = bonus;
-        cf.question = question;
-        cf.lessRights = lessRights;
-        cf.hack = hack;
-        cf.scam = scam;
-        cf.recovery = recovery;
-        cf.buyOrDie = buyOrDie;
-
-        cf.upgradeList = upgradeList;
-
-        cf.tutorialDone = tutorialDone;
-        cf.negativeUnlocked = negativeUnlocked;
-        cf.clicks = clicks;
-        cf.clickPower = clickPower;
     }
 }

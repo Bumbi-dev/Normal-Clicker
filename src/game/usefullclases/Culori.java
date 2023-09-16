@@ -1,6 +1,8 @@
+package game.usefullclases;
+
 import java.awt.*;
 
-public final class Culori {
+public final class Culori {//Colors
     public static final Color backround = new Color(240,240,240,255);
     public static final Color available = new Color(163,255,97);  // 173,255,47 ... 124,252,0      163,255,97
     public static final Color notAvailable = new Color(255,97,97);
