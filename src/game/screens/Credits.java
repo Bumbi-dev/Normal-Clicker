@@ -76,7 +76,8 @@ public class Credits extends JPanel implements ActionListener {
                 "DEVELOPER:               \n" +
                 "Manu\n\n\n" +
                 "TESTER:                      \n" +
-                "Dani\n\n\n\n\n" +
+                "Dani\n" +
+                "Sergiu\n\n\n\n" +
                 "Thank you for playing!";
 
         repaint();
