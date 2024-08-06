@@ -1,11 +1,12 @@
 
 # "Normal Clicker"
+This project was made using the java swing framework and was my first big project, I hope you enjoy!
 
 Welcome to Normal Clicker! Your goal is to reach the end by clicking.
 
 ## How to Play
 
-- Go to https://man-te.itch.io/normal-clicker and download the project or open it in an IDE.
+- Pull this repository and run the "IntroFrame" class or go to https://man-te.itch.io/normal-clicker and download the project.
 - Click buttons.
 - To maintain the intended experience avoid peeking at the source code or using an autoclicker.
 
