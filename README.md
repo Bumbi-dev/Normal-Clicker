@@ -6,7 +6,7 @@ Welcome to Normal Clicker! Your goal is to reach the end by clicking.
 
 ## How to Play
 
-- Pull this repository and run the "IntroFrame" class or go to https://man-te.itch.io/normal-clicker and download the project.
+- CLone this repository and run the "IntroFrame.java" class or go to https://man-te.itch.io/normal-clicker and download the project.
 - Click buttons.
 - To maintain the intended experience avoid peeking at the source code or using an autoclicker.
 
